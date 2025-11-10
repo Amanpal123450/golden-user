@@ -60,7 +60,7 @@ export default function VerificationPage() {
       if (photo) formData.append("photo", photo);
 
       const res = await axios.post(
-  "http://localhost:5000/api/verification/submit",
+  "https://golden-4.onrender.com/api/verification/submit",
   formData,
   { headers: { "Content-Type": "multipart/form-data" } }
 );

@@ -22,7 +22,7 @@ export default function WelcomePage() {
     try {
       // API call to verify gift number
       const response = await axios.post(
-        `http://localhost:5000/api/user-rewards/verify`,
+        `https://golden-4.onrender.com/api/user-rewards/verify`,
         { gift_number: giftNumber }
       );
       console.log("Verification response:", response.data);
