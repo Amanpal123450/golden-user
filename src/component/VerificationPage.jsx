@@ -1,5 +1,6 @@
 import { useState } from "react";
-import jsPDF from "jspdf"; // <-- install this with: npm install jspdf
+import axios from "axios";
+import jsPDF from "jspdf";
 
 export default function VerificationPage() {
   const [form, setForm] = useState({
@@ -37,7 +38,8 @@ export default function VerificationPage() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
+  const handleChange = (e) =>
+    setForm({ ...form, [e.target.name]: e.target.value });
 
   const handlePhoto = (e) => {
     const file = e.target.files[0];
@@ -45,10 +47,36 @@ export default function VerificationPage() {
     setPhotoPreview(URL.createObjectURL(file));
   };
 
-  const handleSubmit = (e) => {
+  // ✅ Submit form and send to backend
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validate()) return;
-    setSubmitted(true);
+
+    try {
+      const formData = new FormData();
+      Object.entries(form).forEach(([key, value]) =>
+        formData.append(key, value)
+      );
+      if (photo) formData.append("photo", photo);
+
+      const res = await axios.post(
+  "http://localhost:5000/api/verification/submit",
+  formData,
+  { headers: { "Content-Type": "multipart/form-data" } }
+);
+
+
+
+      console.log("Verification submitted:", res.data);
+      alert(res.data.message);
+      setSubmitted(true);
+    } catch (error) {
+      console.error("Error submitting verification:", error);
+      alert(
+        error.response?.data?.message ||
+          "Something went wrong while submitting. Please try again."
+      );
+    }
   };
 
   // ✅ Download PDF receipt
@@ -74,9 +102,8 @@ export default function VerificationPage() {
     ];
 
     data.forEach(([label, value], index) => {
-  doc.text(`${label}: ${value}`, 20, yStart + index * lineHeight);
-});
-
+      doc.text(`${label} ${value}`, 20, yStart + index * lineHeight);
+    });
 
     if (photoPreview) {
       doc.addImage(photoPreview, "JPEG", 150, 30, 40, 40);
@@ -86,43 +113,26 @@ export default function VerificationPage() {
     doc.save("Reward_Receipt.pdf");
   };
 
-  // ✅ Receipt view after submission
   if (submitted) {
     return (
       <div className="d-flex flex-column vh-100 bg-dark text-light">
-        
-
         <div className="flex-grow-1 d-flex justify-content-center align-items-center text-center p-3 overflow-auto">
-          <div className="bg-light text-dark rounded p-4 shadow w-100" style={{ maxWidth: "550px" }}>
+          <div
+            className="bg-light text-dark rounded p-4 shadow w-100"
+            style={{ maxWidth: "550px" }}
+          >
             <h2 className="text-success fw-bold mb-3">🎉 Thank You!</h2>
             <p>Your reward claim has been submitted successfully.</p>
             <hr />
-            <h5 className="text-primary mb-3 fw-bold">📄 Your Submitted Details</h5>
+            <h5 className="text-primary mb-3 fw-bold">
+              📄 Your Submitted Details
+            </h5>
             <ul className="list-group text-start mb-3">
-              <li className="list-group-item">
-                <b>Full Name:</b> {form.name}
-              </li>
-              <li className="list-group-item">
-                <b>Email:</b> {form.email}
-              </li>
-              <li className="list-group-item">
-                <b>Phone:</b> {form.phone}
-              </li>
-              <li className="list-group-item">
-                <b>Country:</b> {form.country}
-              </li>
-              <li className="list-group-item">
-                <b>State:</b> {form.state}
-              </li>
-              <li className="list-group-item">
-                <b>District:</b> {form.district}
-              </li>
-              <li className="list-group-item">
-                <b>Pin Code:</b> {form.pincode}
-              </li>
-              <li className="list-group-item">
-                <b>Address:</b> {form.address}
-              </li>
+              {Object.entries(form).map(([key, value]) => (
+                <li className="list-group-item" key={key}>
+                  <b>{key.charAt(0).toUpperCase() + key.slice(1)}:</b> {value}
+                </li>
+              ))}
             </ul>
 
             {photoPreview && (
@@ -132,7 +142,11 @@ export default function VerificationPage() {
                   src={photoPreview}
                   alt="User"
                   className="rounded shadow"
-                  style={{ width: "120px", height: "120px", objectFit: "cover" }}
+                  style={{
+                    width: "120px",
+                    height: "120px",
+                    objectFit: "cover",
+                  }}
                 />
               </div>
             )}
@@ -145,20 +159,15 @@ export default function VerificationPage() {
             </button>
           </div>
         </div>
-
-       
       </div>
     );
   }
 
-  // ✅ Default form view
+  // Default form
   return (
-    <div className="d-flex flex-column vh-100">
-      
-
-
+    <div className="d-flex flex-column vh-100 bg-dark text-light">
       <div
-        className="flex-grow-1 overflow-auto bg-dark text-light d-flex justify-content-center align-items-start p-3"
+        className="flex-grow-1 overflow-auto d-flex justify-content-center align-items-start p-3"
         style={{ minHeight: 0 }}
       >
         <div
@@ -232,8 +241,6 @@ export default function VerificationPage() {
           </form>
         </div>
       </div>
-
-     
     </div>
   );
 }

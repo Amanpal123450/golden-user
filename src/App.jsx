@@ -24,7 +24,7 @@ export default function App() {
         <Route path='/' element={<WelcomePage/>} />
         <Route path="/reward" element={<RewardPage/>} />
         <Route path="/error" element={<ErrorPage />} />
-              <Route path="/verify" element={<VerificationPage/>} />
+        <Route path="/verify" element={<VerificationPage/>} />
         {/* <Route path='/about' element={<AboutPage />} /> */}
         {/* <Route path='/service' element={<ServicePage />} /> */}
         {/* <Route path='/contact' element={<ContactPage />} /> */}
