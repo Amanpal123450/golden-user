@@ -1,0 +1,114 @@
+/* body, html {
+  margin: 0;
+  padding: 0;
+  background-color: #0b1320;
+  font-family: "Segoe UI", sans-serif;
+}
+
+.welcome-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.navbar {
+  background-color: #0b1320 !important;
+  border-bottom: 1px solid #222;
+}
+
+.welcome-card {
+  max-width: 420px;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(255, 193, 7, 0.2);
+}
+
+footer {
+  border-top: 1px solid #222;
+} */
+
+
+/* Full layout setup */
+html, body, #root, .app-wrapper {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  background-color: #0d1117;
+  color: #fff;
+  font-family: "Poppins", sans-serif;
+}
+
+.app-wrapper {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* The main content area (Home page) should fill space between nav & footer */
+.content-area {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* HOME CARD */
+.home-container {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px 15px;
+}
+
+.card-container {
+  background-color: #161b22;
+  padding: 40px;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 400px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+/* Input styling */
+.form-control {
+  background-color: #0d1117;
+  color: #fff;
+  border: 1px solid #333;
+}
+.form-control::placeholder {
+  color: #777;
+}
+.form-control:focus {
+  border-color: #ffc107;
+  box-shadow: none;
+  color: #fff;
+}
+
+/* Footer fixed at bottom naturally because of flex */
+.footer {
+  background-color: #0d1117;
+  border-top: 1px solid #333;
+  padding: 10px 0;
+  text-align: center;
+  font-size: 14px;
+}
+
+/* RESPONSIVE FIXES */
+@media (max-width: 768px) {
+  .navbar-brand {
+    font-size: 18px;
+  }
+  .card-container {
+    padding: 25px;
+  }
+}
+
+@media (max-width: 480px) {
+  .nav-link {
+    font-size: 14px;
+  }
+  .card-container {
+    padding: 20px;
+  }
+}
