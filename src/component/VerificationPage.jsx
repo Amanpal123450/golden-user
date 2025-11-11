@@ -13,44 +13,133 @@ export default function VerificationPage() {
     pincode: "",
     address: "",
   });
+
   const [photo, setPhoto] = useState(null);
   const [photoPreview, setPhotoPreview] = useState("");
   const [errors, setErrors] = useState({});
   const [submitted, setSubmitted] = useState(false);
 
-  // ✅ Validation
-  const validate = () => {
+  // ✅ Field validation
+  const validateField = (name, value) => {
+    value = value.trim();
+    switch (name) {
+      case "name":
+        if (!value) return "Full name is required";
+        if (!/^[a-zA-Z\s]+$/.test(value))
+          return "Name can only contain letters and spaces";
+        if (value.length < 3) return "Name must be at least 3 characters";
+        break;
+
+      case "email":
+        if (!value) return "Email is required";
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value))
+          return "Enter a valid email address";
+        break;
+
+      case "phone":
+        if (!value) return "Phone number is required";
+        if (!/^[0-9]+$/.test(value))
+          return "Phone number must contain only digits";
+        if (value.length !== 10)
+          return "Phone number must be exactly 10 digits";
+        break;
+
+      case "country":
+        if (!value) return "Country is required";
+        if (!/^[a-zA-Z\s]+$/.test(value))
+          return "Country name can only contain letters";
+        break;
+
+      case "state":
+        if (!value) return "State is required";
+        if (!/^[a-zA-Z\s]+$/.test(value))
+          return "State name can only contain letters";
+        break;
+
+      case "district":
+        if (!value) return "District is required";
+        if (!/^[a-zA-Z\s]+$/.test(value))
+          return "District can only contain letters";
+        break;
+
+      case "pincode":
+        if (!value) return "Pincode is required";
+        if (!/^[0-9]{6}$/.test(value))
+          return "Pincode must be exactly 6 digits";
+        break;
+
+      case "address":
+        if (!value) return "Address is required";
+        if (value.length < 10)
+          return "Address should be at least 10 characters";
+        break;
+
+      default:
+        return "";
+    }
+    return "";
+  };
+
+  // ✅ Full form validation
+  const validateForm = () => {
     const newErrors = {};
-    if (!form.name.trim()) newErrors.name = "Full name is required";
-    if (!form.email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/))
-      newErrors.email = "Valid email is required";
-    if (!form.phone.match(/^[0-9]{10}$/))
-      newErrors.phone = "Enter a valid 10-digit phone number";
-    if (!form.country.trim()) newErrors.country = "Country is required";
-    if (!form.state.trim()) newErrors.state = "State is required";
-    if (!form.district.trim()) newErrors.district = "District is required";
-    if (!form.pincode.match(/^[0-9]{6}$/))
-      newErrors.pincode = "Enter a valid 6-digit pin code";
-    if (!form.address.trim())
-      newErrors.address = "Local area address is required";
+    Object.entries(form).forEach(([key, value]) => {
+      const error = validateField(key, value);
+      if (error) newErrors[key] = error;
+    });
+
     if (!photo) newErrors.photo = "Please upload your photo";
+    else if (!photo.type.startsWith("image/"))
+      newErrors.photo = "Uploaded file must be an image";
+    else if (photo.size > 2 * 1024 * 1024)
+      newErrors.photo = "Photo size must be under 2 MB";
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleChange = (e) =>
-    setForm({ ...form, [e.target.name]: e.target.value });
+  // ✅ Handle input change + restrict invalid chars
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    let newValue = value;
 
-  const handlePhoto = (e) => {
-    const file = e.target.files[0];
-    setPhoto(file);
-    setPhotoPreview(URL.createObjectURL(file));
+    // Prevent invalid characters live
+    if (name === "phone") newValue = value.replace(/[^0-9]/g, "").slice(0, 10);
+    if (name === "pincode") newValue = value.replace(/[^0-9]/g, "").slice(0, 6);
+    if (["name", "country", "state", "district"].includes(name))
+      newValue = value.replace(/[^a-zA-Z\s]/g, "");
+
+    setForm((prev) => ({ ...prev, [name]: newValue }));
+
+    // Live validation
+    setErrors((prev) => ({ ...prev, [name]: validateField(name, newValue) }));
   };
 
-  // ✅ Submit form and send to backend
+  // ✅ Handle photo upload
+  const handlePhoto = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (!file.type.startsWith("image/")) {
+        setErrors((prev) => ({ ...prev, photo: "File must be an image" }));
+        return;
+      }
+      if (file.size > 2 * 1024 * 1024) {
+        setErrors((prev) => ({
+          ...prev,
+          photo: "Photo size must be under 2 MB",
+        }));
+        return;
+      }
+      setPhoto(file);
+      setPhotoPreview(URL.createObjectURL(file));
+      setErrors((prev) => ({ ...prev, photo: "" }));
+    }
+  };
+
+  // ✅ Submit
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!validate()) return;
+    if (!validateForm()) return;
 
     try {
       const formData = new FormData();
@@ -60,26 +149,23 @@ export default function VerificationPage() {
       if (photo) formData.append("photo", photo);
 
       const res = await axios.post(
-  "https://golden-4.onrender.com/api/verification/submit",
-  formData,
-  { headers: { "Content-Type": "multipart/form-data" } }
-);
+        "https://golden-4.onrender.com/api/verification/submit",
+        formData,
+        { headers: { "Content-Type": "multipart/form-data" } }
+      );
 
-
-
-      console.log("Verification submitted:", res.data);
       alert(res.data.message);
       setSubmitted(true);
     } catch (error) {
       console.error("Error submitting verification:", error);
       alert(
         error.response?.data?.message ||
-          "Something went wrong while submitting. Please try again."
+          "Something went wrong. Please try again."
       );
     }
   };
 
-  // ✅ Download PDF receipt
+  // ✅ Download Receipt
   const downloadReceipt = () => {
     const doc = new jsPDF();
     doc.setFont("helvetica", "bold");
@@ -113,6 +199,7 @@ export default function VerificationPage() {
     doc.save("Reward_Receipt.pdf");
   };
 
+  // ✅ Success Page
   if (submitted) {
     return (
       <div className="d-flex flex-column vh-100 bg-dark text-light">
@@ -163,7 +250,7 @@ export default function VerificationPage() {
     );
   }
 
-  // Default form
+  // ✅ Default Form UI
   return (
     <div className="d-flex flex-column vh-100 bg-dark text-light">
       <div
@@ -181,7 +268,7 @@ export default function VerificationPage() {
             Enter your details to claim your reward.
           </p>
 
-          <form onSubmit={handleSubmit}>
+          <form onSubmit={handleSubmit} noValidate>
             {[
               { label: "Full Name", name: "name", type: "text" },
               { label: "Email", name: "email", type: "email" },
@@ -195,7 +282,9 @@ export default function VerificationPage() {
                 <label className="form-label fw-bold">{field.label}</label>
                 <input
                   type={field.type}
-                  className="form-control"
+                  className={`form-control ${
+                    errors[field.name] ? "is-invalid" : ""
+                  }`}
                   name={field.name}
                   value={form[field.name]}
                   onChange={handleChange}
@@ -210,7 +299,9 @@ export default function VerificationPage() {
             <div className="mb-3 text-start">
               <label className="form-label fw-bold">Local Area Address</label>
               <textarea
-                className="form-control"
+                className={`form-control ${
+                  errors.address ? "is-invalid" : ""
+                }`}
                 rows="2"
                 name="address"
                 value={form.address}
@@ -226,7 +317,7 @@ export default function VerificationPage() {
               <label className="form-label fw-bold">Upload Your Photo</label>
               <input
                 type="file"
-                className="form-control"
+                className={`form-control ${errors.photo ? "is-invalid" : ""}`}
                 accept="image/*"
                 onChange={handlePhoto}
               />
