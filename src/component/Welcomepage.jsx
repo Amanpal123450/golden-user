@@ -20,34 +20,29 @@ export default function WelcomePage() {
     setLoading(true);
 
     try {
-      // API call to verify gift number
       const response = await axios.post(
         `https://golden-4.onrender.com/api/user-rewards/verify`,
-        { gift_number: giftNumber }
+        { gift_number: giftNumber.trim() }
       );
-      console.log("Verification response:", response.data);
 
       if (response.data.success) {
+        // Save reward data
         localStorage.setItem("reward_data", JSON.stringify(response.data.reward));
-        // Store reward data for/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////zb next page (optional)
-        
+
         // Navigate to reward page
         navigate("/reward", { 
-          state: { reward: response.data.reward} 
+          state: { reward: response.data.reward } 
         });
       }
     } catch (err) {
-      console.error("Verification error:", err);
-      
-      // Handle different error cases
       if (err.response) {
-        setError(err.response.data.message || "Invalid or already used gift number");
-        
-        // Navigate to error page if needed
+        const msg = err.response.data.message || "Invalid or already used gift number";
+        setError(msg);
+
         if (err.response.data.redirect === "/error") {
           setTimeout(() => {
             navigate("/error", { 
-              state: { message: err.response.data.message } 
+              state: { message: msg } 
             });
           }, 1500);
         }
@@ -66,6 +61,7 @@ export default function WelcomePage() {
         <p className="text-light mb-2">
           Enter your exclusive gift number below to proceed.
         </p>
+
         {error && <p className="text-danger small mb-2">{error}</p>}
 
         <form onSubmit={handleSubmit}>
@@ -74,9 +70,10 @@ export default function WelcomePage() {
             className="form-control text-center mb-3"
             placeholder="ENTER GIFT NUMBER"
             value={giftNumber}
-            onChange={(e) => setGiftNumber(e.target.value)}
+            onChange={(e) => setGiftNumber(e.target.value.toUpperCase())}
             disabled={loading}
           />
+
           <button 
             type="submit" 
             className="btn btn-warning fw-bold w-100 py-2"
