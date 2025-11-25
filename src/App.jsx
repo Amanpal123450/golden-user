@@ -19,7 +19,9 @@ export default function App() {
   return (
     
     <BrowserRouter>
+     
     <Navbar/>
+    {/* <div className="app-wrapper"> */}
       <Routes>
         <Route path='/' element={<WelcomePage/>} />
         <Route path="/reward" element={<RewardPage/>} />
@@ -32,6 +34,7 @@ export default function App() {
         {/* <Route path='/cars' element={<CarsPage />} /> */}
         {/* <Route path='/features' element={<FeaturesPage />} /> */}
       </Routes>
+      {/* </div> */}
       <Footer/>
     </BrowserRouter>
   );

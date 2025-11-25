@@ -28,10 +28,10 @@ export default function Footer() {
       <p className="mb-0 small">
         Address: chungi rath 5678 | Email:{" "}
         <a
-          href="mailto:goldenc@gmail.com"
+          href="mailto:goldenar.commando@gmail.com"
           className="text-warning text-decoration-none"
         >
-          goldenc@gmail.com
+          goldenar.commando@gmail.com
         </a>
       </p>
     </footer>

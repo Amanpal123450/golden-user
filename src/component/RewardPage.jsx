@@ -63,7 +63,7 @@ export default function RewardPage() {
         className="btn btn-warning fw-bold px-5 py-2"
         onClick={handleClaim}
       >
-        Claim Another Reward
+        Claim Reward
       </button>
     </div>
   );
